@@ -14,9 +14,14 @@
 return {
     no_consumer = true,
     fields = {
+        methods = {
+            type = "array",
+            required = true,
+        },
         rules = {
             type = "array",
             required = true,
         }
-    }
+    },
+    self_check = check --[[这里应该是个bug, 设定的self_check返回给调用方的是"function"]]
 }
