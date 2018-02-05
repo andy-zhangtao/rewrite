@@ -8,6 +8,20 @@
 >此插件不会修改upstream,因此仅仅是修改了源URL。
 
 
+## Local Dev
+
+使用工程中的dev.sh会创建本地开发环境。 在执行dev.sh之前，需要创建postgres数据库，推荐使用下面的命令来创建:
+
+```docker
+docker run -d --name kong-database \
+              -p 5432:5432 \
+              -e "POSTGRES_USER=kong" \
+              -e "POSTGRES_DB=kong" \
+              postgres:9.4
+```
+
+创建成功之后，执行dev.sh后就会创建local dev 环境。 
+
 ## Example 1
 
 假设有API /_ping. 在没有启用rewrite plugin之前，其Upstream URL为 http://up1/_ping。 
