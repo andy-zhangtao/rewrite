@@ -22,6 +22,12 @@ docker run -d --name kong-database \
 
 创建成功之后，执行dev.sh后就会创建local dev 环境。 
 
+如果需要Admin GUI环境，执行以下命令:
+```docker
+docker run -p 1337:1337 -it --link kong:kong --name konga pantsel/konga
+```
+当konga当前对于kong 0.12兼容性不太好。 有些功能会报错。 需要配合其它工具使用(curl/postman， etc...)
+
 ## Example 1
 
 假设有API /_ping. 在没有启用rewrite plugin之前，其Upstream URL为 http://up1/_ping。 
