@@ -1,5 +1,5 @@
 package = "kong-plugin-rewrite"
-version = "0.1.0-2"
+version = "0.2.0-1"
 
 local pluginName = package:match("^kong%-plugin%-(.+)$")  -- "rewrite"
 
@@ -7,7 +7,7 @@ supported_platforms = {"linux", "macosx"}
 source = {
   -- these are initially not required to make it work
   url = "git://github.com/andy-zhangtao/rewrite",
-  tag = "v0.1.0",
+  tag = "v0.2.0",
   branch="master"
 }
 

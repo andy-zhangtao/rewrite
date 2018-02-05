@@ -59,8 +59,29 @@ http://up1/v1/echo?soucre2=mymac&id=2&source=rewrite&source2=kongplugin
 
 因此最终的source2=kongpluing。 因为Rewrite仅仅是将规则中的query_string附加到源query_string中。 因此这种行为是Openresty/Nginx的行为。
 
+## Example 3 (v0.2.0 添加)
+
+将Header作为变量值，动态生成URL
+设置Plugin参数为: 
+```lua
+H2?/v1/{H2}?source=rewrite&header=valeddd
+```
+预期结果为:当源请求header中存在H2时，启用Rewrite Plugin。 同时将URL中的{H2}替换为Header中的H2值。 
+
+因此当H2=test时，Rewrite将生成:
+```lua
+/v1/test?source=rewrite&header=valeddd
+```
+
+因此当H2=echo时，Rewrite将生成:
+```lua
+/v1/echo?source=rewrite&header=valeddd
+```
 
 # ChangLog
+
+### v0.2.0
+* 支持将Header作为变量组合URL
 
 ### v0.1.0
 * 支持按照Method，Header规则进行匹配。 
