@@ -14,7 +14,7 @@ local NGX_ERR = ngx.ERR
 local NGX_DEBUG = ngx.DEBUG
 
 local RewriteHandler = BasePlugin:extend()
-local destURL = {}
+destURL = {}
 
 -- checkMethod 判断请求方法是否合法
 local function checkMethod(config)
@@ -29,6 +29,52 @@ local function checkMethod(config)
     return false
 end
 
+-- fillURL 填充URL地址
+-- 填充规则:
+-- 如果URL中存在 {},则视为取特定的Header。 如{X-Dest-URL},则表示取Header X-Dest-URL的值填充此段URL。当没有此Header时，则填充值为空
+--
+-- 获取填充值的规则:
+-- {}必须在同一个Pattern之中视为合法，反之非法。
+-- 例如:
+--      /{Header1}
+--      /{Header1}/
+--      均为合法。
+-- 而一下则视为非法：
+--      /{Header1/}
+--      {/Header1}
+--      {/Header1}/
+local function fillURL(url)
+    originURL = url
+    urls = utils.split(url, "/")
+    for idx, u in pairs(urls) do
+        if string.len(u) > 0 then
+            prefix = string.find(u, "{")
+            suffix = string.find(u, "}")
+            if prefix ~= nil and suffix ~= nil and prefix < suffix then
+                exHeader = string.sub(u, prefix + 1, suffix - 1)
+                if string.len(exHeader) > 0 then
+                    urls[idx] = req_get_headers()[exHeader]
+                else
+                    urls[idx] = ""
+                end
+            end
+        end
+    end
+
+    durl = ""
+    for idx, u in pairs(urls) do
+        if idx <=table.getn(urls)-1 then
+            durl = durl .. u .. "/"
+        else
+            durl = durl .. u
+        end
+
+    end
+
+    ngx_log(NGX_ERR, "FillURL Origin URL == [" .. originURL .. "] FillURL New URL == [" .. durl .. "]")
+    return durl
+end
+
 local function checkHeader(config)
     for _, v in pairs(config.rules) do
         rule = utils.split(v, "?", 2)
@@ -41,6 +87,8 @@ local function checkHeader(config)
 
         if req_get_headers()[header] then
             destURL = utils.split(rule[2], "?", 2)
+            destURL[1] = fillURL(destURL[1])
+            ngx_log(NGX_ERR, destURL)
             return true
         else
             return false
