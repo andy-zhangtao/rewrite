@@ -6,10 +6,12 @@
 --
 
 --[[用户自定义匹配规则
--- 当前匹配规则格式为: Header?Dest-Url;
+-- 当前匹配规则格式为: (Header|Source-Url)?Dest-Url;
 --  Header: 请求Header
+--  Source-Url: 请求URL
 --  Dest-URL: Upstream URL
 -- 当在请求的Header中存在预定义的header时，将会跳转到Dest-URL
+-- 如果请求URL中包含有Source-Url，也会跳转到Dest-URL
 -- ]]
 return {
     no_consumer = true,
