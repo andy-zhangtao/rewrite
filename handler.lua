@@ -101,6 +101,7 @@ end
 -- checkURL 判断是否包含有切换URL
 local function checkURL(config)
   originURL = ngx.var.uri
+
   for _, v in pairs(config.rules) do
     rule = utils.split(v, "?", 2)
     --[[正常情况不应该没有跳转URL,否则就失去了rewrite的意义]]
@@ -109,16 +110,15 @@ local function checkURL(config)
     end
 
     srcURL = rule[1]
-
+    ngx_log(NGX_ERR, "Compare [" .. originURL .. "] [" .. srcURL .. "]")
     if pl_stringx.startswith(originURL, srcURL) then
       destURL = utils.split(rule[2], "?", 2)
       destURL[1] = fillURL(destURL[1])
       ngx_log(NGX_ERR, destURL)
       return true
-    else
-      return false
     end
   end
+  return false
 end
 
 
@@ -145,6 +145,7 @@ function RewriteHandler:access(config)
   require 'pl.pretty'.dump(config)
   RewriteHandler.super.access(self)
   log("RewriteHandler access")
+  log(ngx.var.uri)
   ngx_log(NGX_ERR, "===========================")
 
   if needRewrite(config) then
@@ -159,21 +160,23 @@ function RewriteHandler:access(config)
       end
     end
 
---    if req_get_headers()[header] then
---      ngx.var.upstream_uri = destURL[1]
---    end
+    --    if req_get_headers()[header] then
+    --      ngx.var.upstream_uri = destURL[1]
+    --    end
     ngx.var.upstream_uri = destURL[1]
 
     ngx.req.set_uri_args(url_args)
   else
-    ngx_log(NGX_ERR, ngx.var.upstream_uri .. " NO MATCH REWRITE RULE Method[" .. ngx.req.get_method() .. "]")
+    ngx_log(NGX_ERR, ngx.var.uri .. " NO MATCH REWRITE RULE ")
+    -- 匹配失败的时候,保留原有的请求URI
+    ngx.var.upstream_uri = ngx.var.uri
   end
 
   ngx_log(NGX_DEBUG, require 'pl.pretty'.dump(ngx.var.query_string))
-  ngx_log(NGX_DEBUG, ngx.var.upstream_uri)
+  ngx_log(NGX_DEBUG, "origin[" .. ngx.var.uri .. "] rewrite[" .. ngx.var.upstream_uri .. "]")
   ngx_log(NGX_ERR, "===========================")
 end
 
 --RewriteHandler.PRIORITY = 100
-RewriteHandler.VERSION = "v0.2.1"
+RewriteHandler.VERSION = "v0.2.2"
 return RewriteHandler
