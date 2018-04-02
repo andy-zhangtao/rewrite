@@ -78,7 +78,25 @@ H2?/v1/{H2}?source=rewrite&header=valeddd
 /v1/echo?source=rewrite&header=valeddd
 ```
 
+## Example 4 (v0.2.1 添加)
+
+设置Plugin参数为:
+```lua
+/vm/dd?/v2/m
+```
+预期结果为: 当源请求URL中以/vm/dd开始时，将此请求的源URL替换为/v2/m。最终的目标URL为:
+
+```lua
+源请求:
+http://domain/vm/dd
+目标请求:
+http://domain/v2/m
+```
+
 # ChangLog
+
+### v0.2.1
+* 支持URL匹配替换
 
 ### v0.2.0
 * 支持将Header作为变量组合URL
