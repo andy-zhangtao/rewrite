@@ -93,7 +93,29 @@ http://domain/vm/dd
 http://domain/v2/m
 ```
 
+## Example 5 (v0.3.0 添加)
+> 动态修改upstream
+
+通过添加`domain://`动态修改upstream
+
+例如设置Plugin参数为: (假设源请求的默认upstream为tiny-srv，当按照下面规则设置后，rewrite将会将源请求修改为 http(s)://tiny-svr-1/v1/test。 tiny-srv-1为其它已存在的upstream名称)
+```lua
+/_ping?domain://tiny-srv-1/v1/test
+```
+则源请求为:
+```
+http://tiny-srv/_ping
+```
+修改后的目标请求为：
+```
+http://tiny-srv-1/v1/test
+``
+
+
 # ChangLog
+
+### v0.3.0
+* 支持修改upstream名称
 
 ### v0.2.1
 * 支持URL匹配替换
