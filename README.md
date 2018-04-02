@@ -109,7 +109,7 @@ http://tiny-srv/_ping
 修改后的目标请求为：
 ```
 http://tiny-srv-1/v1/test
-``
+```
 
 
 # ChangLog
