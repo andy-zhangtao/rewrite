@@ -16,6 +16,23 @@ local NGX_DEBUG = ngx.DEBUG
 
 local RewriteHandler = BasePlugin:extend()
 destURL = {}
+upstream = ''
+
+-- getUpstream 从url中解析upstream
+-- 解析规则:
+-- 如果URL以开头 doamin://
+-- 则将domain://和后面第一个/之间的值作为upstream
+-- 例如domain://tiny-srv/_ping. 提取后的upstream为tiny-srv
+local function getUpstream(url)
+  if pl_stringx.startswith(url, "domain://") then
+    temp_name = string.sub(url, string.len("domain://") + 1, -1)
+    temp_upstream = utils.split(temp_name, "/", 2)
+    upstream = temp_upstream[1]
+    url = string.sub(temp_name, string.len(upstream) + 1, -1)
+    ngx_log(NGX_ERR, "New Upsteam [" .. upstream .. "] url [" .. url .. "]")
+    return url
+  end
+end
 
 -- fillURL 填充URL地址
 -- 填充规则:
@@ -89,6 +106,7 @@ local function checkHeader(config)
 
     if req_get_headers()[header] then
       destURL = utils.split(rule[2], "?", 2)
+      destURL[1] = getUpstream(destURL[1])
       destURL[1] = fillURL(destURL[1])
       ngx_log(NGX_ERR, destURL)
       return true
@@ -113,6 +131,7 @@ local function checkURL(config)
     ngx_log(NGX_ERR, "Compare [" .. originURL .. "] [" .. srcURL .. "]")
     if pl_stringx.startswith(originURL, srcURL) then
       destURL = utils.split(rule[2], "?", 2)
+      destURL[1] = getUpstream(destURL[1])
       destURL[1] = fillURL(destURL[1])
       ngx_log(NGX_ERR, destURL)
       return true
@@ -146,7 +165,8 @@ function RewriteHandler:access(config)
   RewriteHandler.super.access(self)
   log("RewriteHandler access")
   log(ngx.var.uri)
-  ngx_log(NGX_ERR, "===========================")
+
+
 
   if needRewrite(config) then
     local url_args = ngx.req.get_uri_args()
@@ -160,9 +180,10 @@ function RewriteHandler:access(config)
       end
     end
 
-    --    if req_get_headers()[header] then
-    --      ngx.var.upstream_uri = destURL[1]
-    --    end
+    if string.len(upstream) > 0 then
+      ngx.ctx.balancer_address.host = upstream
+    end
+
     ngx.var.upstream_uri = destURL[1]
 
     ngx.req.set_uri_args(url_args)
@@ -178,5 +199,5 @@ function RewriteHandler:access(config)
 end
 
 --RewriteHandler.PRIORITY = 100
-RewriteHandler.VERSION = "v0.2.2"
+RewriteHandler.VERSION = "v0.3.0"
 return RewriteHandler
