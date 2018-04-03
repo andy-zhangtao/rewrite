@@ -111,8 +111,23 @@ http://tiny-srv/_ping
 http://tiny-srv-1/v1/test
 ```
 
+## Example 6 (v0.3.1 添加)
+> 支持对URL进行正则表达式判断
+
+例如设置Plugin 参数为: (假设源请求url为 /s/ping/echo, 通过正则表达式取出【echo】。然后将/s/ping/echo替换为/v1/echo)
+```
+([^/]+)$?/v1/$1
+```
+
+则经过Rewrite plugin处理之后，源请求将替换为:
+```
+/v1/echo
+```
 
 # ChangLog
+
+### v0.3.1
+* 支持对URL进行正则表达式判断
 
 ### v0.3.0
 * 支持修改upstream名称
