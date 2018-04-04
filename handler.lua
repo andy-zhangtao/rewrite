@@ -118,6 +118,7 @@ end
 -- checkHeader 判断是否包含有切换Header
 local function checkHeader(config)
     for _, v in pairs(config.rules) do
+        ngx_log(NGX_ERR, v)
         rule = utils.split(v, "?", 2)
         --[[正常情况不应该没有跳转URL,否则就失去了rewrite的意义]]
         if table.getn(rule) == 1 then
@@ -154,16 +155,18 @@ local function checkURL(config)
 
 
         destURL = utils.split(rule[2], "?", 2)
+        -- 如果不需要替换upstream,那么destURL[1]仍然为destURL[1]. 所以这里这么做是幂等的
+        destURL[1] = getUpstream(destURL[1])
+
         -- 是否满足直接匹配
         if pl_stringx.startswith(originURL, srcURL) then
-            destURL[1] = getUpstream(destURL[1])
             destURL[1] = fillURL(destURL[1])
             ngx_log(NGX_ERR, destURL)
             return true
         end
 
         -- 是否满足正则匹配
-        newUrl = reMatch(originURL, srcURL, rule[2])
+        newUrl = reMatch(originURL, srcURL, destURL[1])
         if (string.len(newUrl) >= 1) then
             destURL[1] = newUrl
             return true
@@ -224,10 +227,13 @@ function RewriteHandler:access(config)
     end
 
     ngx_log(NGX_DEBUG, require 'pl.pretty'.dump(ngx.var.query_string))
+    ngx_log(NGX_ERR, "----------------------------")
+    args = ngx.req.get_query_args()
+    ngx_log(NGX_ERR, args['tt'])
     ngx_log(NGX_DEBUG, "origin[" .. ngx.var.uri .. "] rewrite[" .. ngx.var.upstream_uri .. "]")
     ngx_log(NGX_ERR, "===========================")
 end
 
 --RewriteHandler.PRIORITY = 100
-RewriteHandler.VERSION = "v0.2.2"
+RewriteHandler.VERSION = "v0.3.2"
 return RewriteHandler
